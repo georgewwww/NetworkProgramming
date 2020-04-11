@@ -5,60 +5,60 @@ using System.Text;
 namespace Client
 {
 	public class Data
-    {
-        public Data()
-        {
-            this.cmdCommand = Command.Null;
-            this.strMessage = null;
-            this.userName = null;
-        }
+	{
+		public string userName;
+		public string strMessage;
+		public Command cmdCommand;
 
-        public Data(byte[] data)
-        {
-            this.cmdCommand = (Command)BitConverter.ToInt32(data, 0);
+		public Data()
+		{
+			this.cmdCommand = Command.Null;
+			this.strMessage = null;
+			this.userName = null;
+		}
 
-            int nameLen = BitConverter.ToInt32(data, 4);
+		public Data(byte[] data)
+		{
+			this.cmdCommand = (Command)BitConverter.ToInt32(data, 0);
 
-            int msgLen = BitConverter.ToInt32(data, 8);
+			int nameLen = BitConverter.ToInt32(data, 4);
 
-            if (nameLen > 0)
-                this.userName = Encoding.UTF8.GetString(data, 12, nameLen);
-            else
-                this.userName = null;
+			int msgLen = BitConverter.ToInt32(data, 8);
 
-            if (msgLen > 0)
-                this.strMessage = Encoding.UTF8.GetString(data, 12 + nameLen, msgLen);
-            else
-                this.strMessage = null;
-        }
+			if (nameLen > 0)
+				this.userName = Encoding.UTF8.GetString(data, 12, nameLen);
+			else
+				this.userName = null;
 
-        public byte[] ToByte()
-        {
-            List<byte> result = new List<byte>();
+			if (msgLen > 0)
+				this.strMessage = Encoding.UTF8.GetString(data, 12 + nameLen, msgLen);
+			else
+				this.strMessage = null;
+		}
 
-            result.AddRange(BitConverter.GetBytes((int)cmdCommand));
+		public byte[] ToByte()
+		{
+			List<byte> result = new List<byte>();
 
-            if (userName != null)
-                result.AddRange(BitConverter.GetBytes(userName.Length));
-            else
-                result.AddRange(BitConverter.GetBytes(0));
+			result.AddRange(BitConverter.GetBytes((int)cmdCommand));
 
-            if (strMessage != null)
-                result.AddRange(BitConverter.GetBytes(strMessage.Length));
-            else
-                result.AddRange(BitConverter.GetBytes(0));
+			if (userName != null)
+				result.AddRange(BitConverter.GetBytes(userName.Length));
+			else
+				result.AddRange(BitConverter.GetBytes(0));
 
-            if (userName != null)
-                result.AddRange(Encoding.UTF8.GetBytes(userName));
+			if (strMessage != null)
+				result.AddRange(BitConverter.GetBytes(strMessage.Length));
+			else
+				result.AddRange(BitConverter.GetBytes(0));
 
-            if (strMessage != null)
-                result.AddRange(Encoding.UTF8.GetBytes(strMessage));
+			if (userName != null)
+				result.AddRange(Encoding.UTF8.GetBytes(userName));
 
-            return result.ToArray();
-        }
+			if (strMessage != null)
+				result.AddRange(Encoding.UTF8.GetBytes(strMessage));
 
-        public string userName;
-        public string strMessage;
-        public Command cmdCommand;
-    }
+			return result.ToArray();
+		}
+	}
 }

@@ -6,32 +6,32 @@ using System.Windows.Forms;
 namespace Client
 {
 	public enum Command
-    {
-        Login,     
-        Logout,    
-        Message,    
-        List,     
-        Null   
-    }
+	{
+		Login,
+		Logout,
+		Message,
+		List,
+		Null
+	}
 
-    public partial class UserForm : Form
-    {
-        public Socket clientSocket;
-        public string userName;    
-        public EndPoint server;   
+	public partial class UserForm : Form
+	{
+		public Socket clientSocket;
+		public string userName;
+		public EndPoint server;
 
-        byte[] byteData = new byte[1024];
+		byte[] byteData = new byte[1024];
 
-        public UserForm()
-        {
-            InitializeComponent();
-        }
+		public UserForm()
+		{
+			InitializeComponent();
+		}
 
-        private void Client_Load(object sender, EventArgs e)
-        {
-            CheckForIllegalCrossThreadCalls = false;
+		private void Client_Load(object sender, EventArgs e)
+		{
+			CheckForIllegalCrossThreadCalls = false;
 
-            this.Text = "Client: " + userName;
+			this.Text = "Client: " + userName;
 
 			Data msgToSend = new Data
 			{
@@ -42,22 +42,22 @@ namespace Client
 
 			byteData = msgToSend.ToByte();
 
-            clientSocket.BeginSendTo(byteData, 0, byteData.Length, SocketFlags.None, server,
-                new AsyncCallback(OnSend), null);
+			clientSocket.BeginSendTo(byteData, 0, byteData.Length, SocketFlags.None, server,
+				new AsyncCallback(OnSend), null);
 
-            byteData = new byte[1024];
-            clientSocket.BeginReceiveFrom(byteData,
-                0, byteData.Length,
-                SocketFlags.None,
-                ref server,
-                new AsyncCallback(OnReceive),
-                null);
-        }
+			byteData = new byte[1024];
+			clientSocket.BeginReceiveFrom(byteData,
+				0, byteData.Length,
+				SocketFlags.None,
+				ref server,
+				new AsyncCallback(OnReceive),
+				null);
+		}
 
-        private void btnSend_Click(object sender, EventArgs e)
-        {
-            try
-            {
+		private void btnSend_Click(object sender, EventArgs e)
+		{
+			try
+			{
 				if (string.IsNullOrEmpty(txtMessage.Text))
 				{
 					return;
@@ -71,77 +71,77 @@ namespace Client
 
 				byte[] byteData = msgToSend.ToByte();
 
-                clientSocket.BeginSendTo(byteData, 0, byteData.Length, SocketFlags.None, server, new AsyncCallback(OnSend), null);
+				clientSocket.BeginSendTo(byteData, 0, byteData.Length, SocketFlags.None, server, new AsyncCallback(OnSend), null);
 
-                txtMessage.Text = string.Empty;
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("An error occured while sending the message.", "Client: " + userName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+				txtMessage.Text = string.Empty;
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("An error occured while sending the message.", "Client: " + userName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
 
-        private void OnSend(IAsyncResult ar)
-        {
-            try
-            {
-                clientSocket.EndSend(ar);
-            }
-            catch (ObjectDisposedException)
-            { }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Client: " + userName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+		private void OnSend(IAsyncResult ar)
+		{
+			try
+			{
+				clientSocket.EndSend(ar);
+			}
+			catch (ObjectDisposedException)
+			{ }
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Client: " + userName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
 
-        private void OnReceive(IAsyncResult ar)
-        {
-            try
-            {
-                clientSocket.EndReceive(ar);
+		private void OnReceive(IAsyncResult ar)
+		{
+			try
+			{
+				clientSocket.EndReceive(ar);
 
-                Data msgReceived = new Data(byteData);
+				Data msgReceived = new Data(byteData);
 
-                switch (msgReceived.cmdCommand)
-                {
-                    case Command.Login:
-                        lstChatters.Items.Add(msgReceived.userName);
-                        break;
+				switch (msgReceived.cmdCommand)
+				{
+					case Command.Login:
+						lstChatters.Items.Add(msgReceived.userName);
+						break;
 
-                    case Command.Message:
-                        break;
+					case Command.Message:
+						break;
 
-                    case Command.List:
-                        lstChatters.Items.AddRange(msgReceived.strMessage.Split('*'));
-                        lstChatters.Items.RemoveAt(lstChatters.Items.Count - 1);
-                        txtChatBox.Text += "[+] " + userName + " has joined the room.\r\n";
-                        break;
-                }
+					case Command.List:
+						lstChatters.Items.AddRange(msgReceived.strMessage.Split('*'));
+						lstChatters.Items.RemoveAt(lstChatters.Items.Count - 1);
+						txtChatBox.Text += "[+] " + userName + " has joined the room.\r\n";
+						break;
+				}
 
-                if (msgReceived.strMessage != null && msgReceived.cmdCommand != Command.List)
-                    txtChatBox.Text += msgReceived.strMessage + "\r\n";
+				if (msgReceived.strMessage != null && msgReceived.cmdCommand != Command.List)
+					txtChatBox.Text += msgReceived.strMessage + "\r\n";
 
-                byteData = new byte[1024];
+				byteData = new byte[1024];
 
-                clientSocket.BeginReceiveFrom(byteData, 0, byteData.Length, SocketFlags.None, ref server,
-                    new AsyncCallback(OnReceive), null);
-            }
-            catch (ObjectDisposedException)
-            { }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Client: " + userName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+				clientSocket.BeginReceiveFrom(byteData, 0, byteData.Length, SocketFlags.None, ref server,
+					new AsyncCallback(OnReceive), null);
+			}
+			catch (ObjectDisposedException)
+			{ }
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Client: " + userName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
 
-        private void txtMessage_TextChanged(object sender, EventArgs e)
-        {
-            if (txtMessage.Text.Length == 0)
-                btnSend.Enabled = false;
-            else
-                btnSend.Enabled = true;
-        }
+		private void txtMessage_TextChanged(object sender, EventArgs e)
+		{
+			if (txtMessage.Text.Length == 0)
+				btnSend.Enabled = false;
+			else
+				btnSend.Enabled = true;
+		}
 
 		private void UserForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
