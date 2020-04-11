@@ -112,6 +112,10 @@ namespace Client
 					case Command.Message:
 						break;
 
+					case Command.Logout:
+						lstChatters.Items.Remove(msgReceived.userName);
+						break;
+
 					case Command.List:
 						lstChatters.Items.AddRange(msgReceived.strMessage.Split('*'));
 						lstChatters.Items.RemoveAt(lstChatters.Items.Count - 1);
